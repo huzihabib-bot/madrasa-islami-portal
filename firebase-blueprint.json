@@ -1,0 +1,82 @@
+{
+  "entities": {
+    "Student": {
+      "title": "Student",
+      "description": "Information about a student registered in the Madrasa.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "fatherName": { "type": "string" },
+        "whatsappNumber": { "type": "string" },
+        "address": { "type": "string" },
+        "currentClass": { "type": "string" },
+        "registrationNumber": { "type": "string", "description": "Unique ID generated for login" },
+        "password": { "type": "string", "description": "Password for parent portal" },
+        "status": { "type": "string", "enum": ["active", "discontinued"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "registrationNumber"]
+    },
+    "DailyReport": {
+      "title": "Daily Report",
+      "description": "Daily attendance and progress report for a student.",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "attendance": { "type": "string", "enum": ["present", "absent", "leave"] },
+        "type": { "type": "string", "enum": ["qaida", "quran"] },
+        "lesson": { "type": "string" },
+        "mistakes": { "type": "string" },
+        "notes": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studentId", "date", "attendance"]
+    },
+    "MadrasaSettings": {
+      "title": "Madrasa Settings",
+      "description": "Global settings for the Madrasa, including name and logo.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "address": { "type": "string" },
+        "contact": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "Visitor": {
+      "title": "Visitor",
+      "description": "Information about a person requesting visitor access via Google Login.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "requestedAt": { "type": "string", "format": "date-time" },
+        "approvedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "status"]
+    }
+  },
+  "firestore": {
+    "/settings/madrasa": {
+      "schema": "MadrasaSettings",
+      "description": "Global settings for the madrasa."
+    },
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Collection of students."
+    },
+    "/students/{studentId}/reports/{reportId}": {
+      "schema": "DailyReport",
+      "description": "Sub-collection of daily reports for each student."
+    },
+    "/visitors/{visitorId}": {
+      "schema": "Visitor",
+      "description": "Collection of visitor requests."
+    }
+  }
+}

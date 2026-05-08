@@ -1,0 +1,96 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'huzihabib@gmail.com';
+    }
+
+    function isApprovedVisitor() {
+      return isSignedIn() && exists(/databases/$(database)/documents/visitors/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/visitors/$(request.auth.uid)).data.status == 'approved';
+    }
+
+    function isStudentOwner(studentId) {
+      return isSignedIn() && request.auth.uid == studentId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidVisitor(data) {
+       return data.keys().hasAll(['uid', 'email', 'status', 'requestedAt']) &&
+              data.status == 'pending' &&
+              data.uid == request.auth.uid;
+    }
+
+    // --- Validation Blueprints ---
+
+    function isValidStudent(data) {
+      return data.keys().hasAll(['name', 'registrationNumber', 'fatherName']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.registrationNumber is string && data.registrationNumber.size() > 0 &&
+             data.fatherName is string && data.fatherName.size() <= 100;
+    }
+
+    function isValidReport(data) {
+      return data.keys().hasAll(['studentId', 'date', 'attendance']) &&
+             data.studentId is string &&
+             data.date is string && data.date.matches('^\\d{4}-\\d{2}-\\d{2}$') &&
+             data.attendance in ['present', 'absent', 'leave'];
+    }
+
+    // --- Rules ---
+
+    // Students Collection
+    match /students/{studentId} {
+      allow read: if true; 
+      
+      allow create: if isAdmin() && isValidStudent(request.resource.data) && isValidId(studentId);
+      allow update: if isAdmin() && isValidStudent(request.resource.data) &&
+                      request.resource.data.registrationNumber == resource.data.registrationNumber; // Immutable ID
+      allow delete: if isAdmin();
+
+      // Reports Sub-collection
+      match /reports/{reportId} {
+        allow read: if true;
+        
+        allow create: if isAdmin() && isValidReport(request.resource.data) && isValidId(reportId) &&
+                        request.resource.data.studentId == studentId;
+        allow update: if isAdmin() && isValidReport(request.resource.data) &&
+                        request.resource.data.studentId == resource.data.studentId;
+        allow delete: if isAdmin();
+      }
+    }
+
+    // Global Settings
+    match /settings/madrasa {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Visitors Collection
+    match /visitors/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isSignedIn() && isValidVisitor(request.resource.data) && userId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+  }
+}
