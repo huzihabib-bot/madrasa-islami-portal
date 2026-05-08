@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@media print {
+  @page {
+    margin: 0.5cm;
+    size: A4;
+  }
+  
+  html, body {
+    font-size: 10pt !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  .no-print, 
+  button, 
+  header, 
+  aside, 
+  nav {
+    display: none !important;
+  }
+
+  /* Force 10pt on all common text elements during print */
+  p, span, div, h4, h3, h2, h1, td, th {
+    font-size: 10pt !important;
+    line-height: 1.2 !important;
+    margin-top: 0 !important;
+    margin-bottom: 2px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Compact spacing for lists and tables */
+  .grid, .flex {
+    gap: 0.1rem !important;
+  }
+
+  /* Reset most common utility paddings and margins for print */
+  [class*="p-"], [class*="px-"], [class*="py-"], [class*="pt-"], [class*="pb-"], [class*="pl-"], [class*="pr-"],
+  [class*="m-"], [class*="mx-"], [class*="my-"], [class*="mt-"], [class*="mb-"], [class*="ml-"], [class*="mr-"] {
+    padding: 2px !important;
+    margin: 1px !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-break-inside-avoid {
+    break-inside: avoid;
+  }
+
+  .print-shadow-none {
+    box-shadow: none !important;
+  }
+
+  .print-border {
+    border: 1px solid #e2e8f0 !important;
+  }
+}
+
+@theme {
+  --font-sans: "Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif;
+  --font-urdu: "Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", serif;
+  --font-mono: "Jameel Noori Nastaleeq", "Noto Nastaliq Urdu", monospace;
+  
+  --color-primary: var(--color-emerald-600);
+  --color-primary-hover: var(--color-emerald-700);
+  --color-secondary: var(--color-sky-600);
+  --color-surface: var(--color-white);
+  --color-background: var(--color-emerald-50/30);
+  --color-border: var(--color-emerald-100);
+}
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+  body {
+    @apply bg-background text-slate-900 font-urdu;
+    direction: rtl;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-urdu);
+    @apply tracking-tight;
+  }
+  input, select, textarea, button {
+    font-family: var(--font-urdu);
+  }
+}
